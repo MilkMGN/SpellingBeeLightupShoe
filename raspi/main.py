@@ -35,6 +35,15 @@ def callback(packet):  # packet type: sacn.DataPacket
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(1)
 
+# Shoe 1 to be broadcast to the Arduino
+red1 =
+blue1 =
+green1 =
 
-time.sleep(10)  # receive for 10 seconds
-receiver.stop()
+# Shoe 2 to be broadcast to the Arduino
+red2 =
+blue2 =
+green2 =
+
+# stop receiving
+# receiver.stop()
