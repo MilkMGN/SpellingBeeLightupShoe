@@ -39,7 +39,7 @@ receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
 
 # define a callback function
-@receiver.listen_on('universe', universe=1)  # listens on universe 1
+@receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
     clear()
     print(packet.dmxData)  # print the received DMX data
@@ -48,7 +48,7 @@ def callback(packet):  # packet type: sacn.DataPacket
 #print(dmxFrame)
 
 # optional: if you want to use multicast use this function with the universe as parameter
-receiver.join_multicast(1)
+receiver.join_multicast(int(UNIVERSE_ID))
 
 # Shoe 1 to be broadcast to the Arduino
 # red1 =
