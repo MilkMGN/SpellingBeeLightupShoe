@@ -1,10 +1,11 @@
 import sacn
 import nrf24
+import pigpio
 import time
 import os
 import configparser
-import platform
 import codecs
+import platform
 
 # Import config file
 CONFIG_FILE = "./config/config.ini"
