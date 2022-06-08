@@ -26,13 +26,12 @@ SHOE_ONE_CHANNEL=config.get("Shoes", "shoe_one_channel")
 SHOE_TWO_CHANNEL=config.get("Shoes", "shoe_two_channel")
 
 print("Starting...")
-time.sleep(0.5)
 print("OS is " + platype)
 print("Universe is " + UNIVERSE_ID)
 print("Shoe 1 channel is " + SHOE_ONE_CHANNEL)
 print("Shoe 2 channel is " + SHOE_TWO_CHANNEL)
 print("Done!")
-time.sleep(2)
+time.sleep(0.5)
 
 # provide an IP-Address to bind to if you are using Windows and want to use multicast
 receiver = sacn.sACNreceiver()
@@ -43,7 +42,8 @@ receiver.start()  # start the receiving thread
 def callback(packet):  # packet type: sacn.DataPacket
     clear()
     print(packet.dmxData)  # print the received DMX data
-    #dmxFrame = [packet.dmxData]
+    #dmxFrame = (packet.dmxData)
+    #print(*dmxFrame)
 
 #print(dmxFrame)
 
