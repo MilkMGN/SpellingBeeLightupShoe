@@ -13,6 +13,8 @@ CONFIG_FILE = "./config/config.ini"
 config = configparser.ConfigParser()
 config.read_file(codecs.open(CONFIG_FILE, "r", "utf-8"))
 
+dmxFrame=""
+
 # set clear type
 platype = platform.system()
 if platype == "Linux":
@@ -41,11 +43,12 @@ receiver.start()  # start the receiving thread
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
     clear()
-    print(packet.dmxData)  # print the received DMX data
+    #print(packet.dmxData)  # print the received DMX data
+    packet.dmxData = dmxFrame
     #dmxFrame = (packet.dmxData)
     #print(*dmxFrame)
 
-#print(dmxFrame)
+print(dmxFrame)
 
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(int(UNIVERSE_ID))
