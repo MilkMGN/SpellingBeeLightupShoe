@@ -1,5 +1,5 @@
 import sacn
-# import circuitpython-nrf24l01
+import nrf24
 import time
 import os
 import configparser
@@ -21,29 +21,44 @@ elif platype == "Windows":
 
 # Set settings based off of config file
 UNIVERSE_ID=config.get("sACN", "universe")
+SHOE_ONE_CHANNEL=config.get("Shoes", "shoe_one_channel")
+SHOE_TWO_CHANNEL=config.get("Shoes", "shoe_two_channel")
+
+print("Starting...")
+time.sleep(0.5)
+print("OS is " + platype)
+print("Universe is " + UNIVERSE_ID)
+print("Shoe 1 channel is " + SHOE_ONE_CHANNEL)
+print("Shoe 2 channel is " + SHOE_TWO_CHANNEL)
+print("Done!")
+time.sleep(2)
 
 # provide an IP-Address to bind to if you are using Windows and want to use multicast
 receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
 
 # define a callback function
-@receiver.listen_on('universe', universe=UNIVERSE_ID)  # listens on universe 1
+@receiver.listen_on('universe', universe=1)  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
     clear()
     print(packet.dmxData)  # print the received DMX data
+    #dmxFrame = [packet.dmxData]
+
+#print(dmxFrame)
 
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(1)
 
 # Shoe 1 to be broadcast to the Arduino
-red1 =
-blue1 =
-green1 =
+# red1 =
+# blue1 =
+# green1 =
 
 # Shoe 2 to be broadcast to the Arduino
-red2 =
-blue2 =
-green2 =
+# red2 =
+# blue2 =
+# green2 =
 
 # stop receiving
-# receiver.stop()
+#time.sleep(15)
+#receiver.stop()

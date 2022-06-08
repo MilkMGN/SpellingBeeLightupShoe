@@ -1,2 +1,2 @@
 sacn
-circuitpython-nrf24l01
+nrf24
