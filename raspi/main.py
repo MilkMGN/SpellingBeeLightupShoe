@@ -47,12 +47,15 @@ receiver.start()  # start the receiving thread
 # define a callback function
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
-    #clear()
+    # clear()
     #print(packet.dmxData)  # print the received DMX
     global dmxFrame
     dmxFrame = packet.dmxData
     return dmxFrame
-callback(packet)
+    #dmxFrame = (packet.dmxData)
+    print(dmxFrame)
+
+
 #print(*dmxFrame)
 
 # optional: if you want to use multicast use this function with the universe as parameter
