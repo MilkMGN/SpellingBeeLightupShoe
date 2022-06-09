@@ -1,7 +1,7 @@
 
 # Magic Foot
 
-Firmware for Arduinos and Raspberry Pis being used in BMT's production of 25th Annual Putnam County Spelling Bee.
+Firmware for Arduinos and Raspberry Pis being used in a production of 25th Annual Putnam County Spelling Bee.
 
 This works using:
 

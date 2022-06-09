@@ -13,7 +13,7 @@ CONFIG_FILE = "./config/config.ini"
 config = configparser.ConfigParser()
 config.read_file(codecs.open(CONFIG_FILE, "r", "utf-8"))
 
-dmxFrame=""
+#dmxFrame=""
 
 # set clear type
 platype = platform.system()
@@ -23,9 +23,14 @@ elif platype == "Windows":
     clear = lambda: os.system('cls')
 
 # Set settings based off of config file
+# Get sACN info
 UNIVERSE_ID=config.get("sACN", "universe")
 SHOE_ONE_CHANNEL=config.get("Shoes", "shoe_one_channel")
 SHOE_TWO_CHANNEL=config.get("Shoes", "shoe_two_channel")
+# Configure nrf24 variables
+RADIO_HOSTNAME=config.get("Radio", "hostname")
+RADIO_PORT=config.get("Radio", "port")
+RADIO_ADDRESS=config.get("Radio", "address")
 
 print("Starting...")
 print("OS is " + platype)
@@ -42,13 +47,13 @@ receiver.start()  # start the receiving thread
 # define a callback function
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
-    clear()
-    #print(packet.dmxData)  # print the received DMX data
-    packet.dmxData = dmxFrame
-    #dmxFrame = (packet.dmxData)
-    #print(*dmxFrame)
-
-print(dmxFrame)
+    #clear()
+    #print(packet.dmxData)  # print the received DMX
+    global dmxFrame
+    dmxFrame = packet.dmxData
+    return dmxFrame
+callback(packet)
+#print(*dmxFrame)
 
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(int(UNIVERSE_ID))
@@ -66,3 +71,4 @@ receiver.join_multicast(int(UNIVERSE_ID))
 # stop receiving
 #time.sleep(15)
 #receiver.stop()
+#print(dmxFrame)
