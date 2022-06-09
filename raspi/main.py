@@ -107,7 +107,7 @@ def callback(packet):  # packet type: sacn.DataPacket
     #logger = logging.getLogger()
     #handler = logging.FileHandler('./log.log')
     #logger.addHandler(handler)
-    #logger.error(packet.dmxData[SHOE_CH1:SHOE_CH2 + 3], datetime.now())
+    #logger.error(f'{datetime.now()}: {packet.dmxData[SHOE_CH1:SHOE_CH2 + 3]}')
     # Assign the data in the appropriate channels to two tuples
     rgb_ch1 = packet.dmxData[SHOE_CH1:SHOE_CH1 + 3]
     rgb_ch2 = packet.dmxData[SHOE_CH2:SHOE_CH2 + 3]
