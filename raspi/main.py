@@ -100,7 +100,7 @@ nrf = init_radio(RADIO_HOSTNAME, RADIO_PORT, RADIO_GPIO_CE, RADIO_ADDRESS)
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
     #clear()
-    print(packet.dmxData[SHOE_CH1:SHOE_CH2 + 3] + timestamp + )  # print the received DMX
+    print(packet.dmxData[SHOE_CH1:SHOE_CH2 + 3] + timestamp)  # print the received DMX
     # Assign the data in the appropriate channels to two tuples
     rgb_ch1 = packet.dmxData[SHOE_CH1:SHOE_CH1 + 3]
     rgb_ch2 = packet.dmxData[SHOE_CH2:SHOE_CH2 + 3]
