@@ -19,5 +19,6 @@ The arduino nanos have cables connected to them to send power & data to two shoe
 ## Acknowledgements
 
  - [sACN (PyPi)](https://pypi.org/project/sacn/)
- - [circuitpython-nrf24l01 (PyPi)](https://pypi.org/project/circuitpython-nrf24l01/)
+ - [nrf24 (PyPi)](https://pypi.org/project/nrf24/)
+ - [pigpio](http://abyz.me.uk/rpi/pigpio/)
  - [Raspbian](https://www.raspberrypi.org/)
