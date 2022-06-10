@@ -73,6 +73,7 @@ elif platform == "darwin":
 # logging.critical("CRITICAL TEST")
 # logging.warn("Timezone is: " + TIMEZONE_CFG + "Time script started should be: " + StartTimestamp + "Currently: " + str(datetime.now(tzinfo=ZoneInfo(TIMEZONE_CFG))))
 
+# Initialise the NRF24L01 radio with config settings
 def gpio_interrupt(gpio, level, tick):
 
     # Interrupt information.
@@ -91,21 +92,16 @@ def gpio_interrupt(gpio, level, tick):
     nrf.reset_packages_lost()
     nrf.power_up_rx()
 
-def init_radio(hostname: str, port: int, gpio: int, address: str) -> nrf24.NRF24:
-    '''Returns a NRF24 object given a valid hostname, port, gpio and address.'''
-    pi = pigpio.pi(hostname, port)
-    if not pi.connected:
-        sys.exit()
+pi = pigpio.pi(RADIO_HOSTNAME, RADIO_PORT)
+if not pi.connected:
+    logging.critical("Pi is not connected. Exiting...")
+    sys.exit()
 
-    pi.callback(gpio, pigpio.FALLING_EDGE, gpio_interrupt)
-
-    nrf = nrf24.NRF24(pi, ce=gpio, payload_size=nrf24.RF24_PAYLOAD.DYNAMIC, channel=100, data_rate=nrf24.RF24_DATA_RATE.RATE_250KBPS, pa_level=nrf24.RF24_PA.LOW)
-    nrf.set_address_bytes(len(address))
-    nrf.open_writing_pipe(address)
-
-    nrf.show_registers()
-
-    return nrf
+pi.callback(RADIO_GPIO_CE, pigpio.FALLING_EDGE, gpio_interrupt)
+nrf = nrf24.NRF24(pi, ce=RADIO_GPIO_CE, payload_size=nrf24.RF24_PAYLOAD.DYNAMIC, channel=100, data_rate=nrf24.RF24_DATA_RATE.RATE_250KBPS, pa_level=nrf24.RF24_PA.LOW)
+nrf.set_address_bytes(len(RADIO_ADDRESS))
+nrf.open_writing_pipe(RADIO_ADDRESS)
+nrf.show_registers()
 
 print("Starting...")
 logging.info("Starting...")
@@ -114,9 +110,9 @@ logging.debug("OS is " + platform)
 print("Universe is " + UNIVERSE_ID)
 logging.debug("Universe is " + UNIVERSE_ID)
 print(f'Shoe 1 channel is {str(SHOE_CH1)}')
-logging.debug(f'Shoe 1 channel is {str(SHOE_CH1)}')
+logging.info(f'Shoe 1 channel is {str(SHOE_CH1)}')
 print(f'Shoe 2 channel is {str(SHOE_CH2)}')
-logging.debug(f'Shoe 2 channel is {str(SHOE_CH2)}')
+logging.info(f'Shoe 2 channel is {str(SHOE_CH2)}')
 time.sleep(0.5)
 print("Initialising Radio...")
 logging.info("Initialising Radio...")
@@ -125,10 +121,7 @@ logging.info("Initialising Radio...")
 receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
 
-# Initialise the radio and set up for sending data
-nrf = init_radio(RADIO_HOSTNAME, RADIO_PORT, RADIO_GPIO_CE, RADIO_ADDRESS)
-
-#init finishes here for some reason
+# init finishes here for some reason
 time.sleep(2)
 print("Done!")
 logging.info("Done!")
@@ -137,11 +130,18 @@ logging.info("Done!")
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
     # clear()
-    print(packet.dmxData[SHOE_CH1:SHOE_CH2 + 3], datetime.now())  # print the received DMX
-    logging.debug(f'{datetime.now()}: {packet.dmxData[SHOE_CH1:SHOE_CH2 + 3]}')
+    rgb_data = packet.dmxData[SHOE_CH1:SHOE_CH2 + 3]
+    print(rgb_data, datetime.now())  # print the received DMX
+
+    # Create a string to be used in the log
+    rgb_str = ''
+    for x in range(len(rgb_data)):
+        rgb_str += str(rgb_data[x]) + ', '
+ #
+    logging.debug(f'{datetime.now(pytz.timezone(TIMEZONE_CFG))}' + rgb_str)
     # Assign the data in the appropriate channels to two tuples
-    rgb_ch1 = packet.dmxData[SHOE_CH1:SHOE_CH1 + 3]
-    rgb_ch2 = packet.dmxData[SHOE_CH2:SHOE_CH2 + 3]
+    rgb_ch1 = rgb_data[0:3]
+    rgb_ch2 = rgb_data[3:6]
 
     # Try sending data using radio
     try:
@@ -158,7 +158,7 @@ def callback(packet):  # packet type: sacn.DataPacket
         nrf.reset_packages_lost()
         nrf.send(payload)
         print(payload)
-        logging.debug("Payload: ",payload)
+        logging.debug("Payload: " + str(payload)) 
     except:
         traceback.print_exc()
         nrf.power_down()
