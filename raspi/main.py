@@ -8,39 +8,14 @@ import codecs
 import platform
 import struct
 import logging
-from datetime import datetime
+import pytz
+from datetime import datetime, timedelta
 
 # Import config file
 CONFIG_FILE = "./config/config.ini"
 
 config = configparser.ConfigParser()
 config.read_file(codecs.open(CONFIG_FILE, "r", "utf-8"))
-
-# Set variable of first start
-StartTimestamp = datetime.now()
-
-# init logging
-fileName='./log/'+StartTimestamp.strftime("%y_%B_%a_%H%M")+'-DEBUG.log'
-logging.basicConfig(format='%(asctime)s %(message)s', filename=fileName, encoding='utf-8', level=logging.DEBUG)
-
-# set clear type
-platform = platform.system()
-if platform == "Linux":
-    clear = lambda: os.system('clear')
-elif platform == "Windows":
-    clear = lambda: os.system('cls')
-
-if platform == "Windows":
-    print("Your OS is unsupported. Please run on Linux.")
-    logging.error("Your OS is unsupported. Please run on Linux.")
-    time.sleep(1)
-    exit()
-
-elif platform == "darwin":
-    print("Your OS is unsupported. Please run on Linux.")
-    logging.error("Your OS is unsupported. Please run on Linux.")
-    time.sleep(1)
-    exit()
 
 # Set settings based off of config file
 # Get sACN universe
@@ -59,6 +34,45 @@ RADIO_ADDRESS = config.get("Radio", "address")
 RADIO_GPIO_CE = int(config.get("Radio", "gpio_ce"))
 # RADIO_GPIO_CSN = config.get("Radio", "gpio_csn")
 
+# i have spent too much time on a stupid debug component ^MilkMGN
+#  Get timezone
+TIMEZONE_CFG = config.get("Logging", "timezone")
+
+# Set variable of first start
+StartTimestamp = datetime.now(pytz.timezone(TIMEZONE_CFG))
+
+# init logging
+fileName='./log/'+StartTimestamp.strftime("%y_%B_%a_%H%M%S")+'-ALL.log'
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename=fileName, encoding='utf-8', level=logging.DEBUG)
+
+# set clear type
+platform = platform.system()
+if platform == "Linux":
+    clear = lambda: os.system('clear')
+elif platform == "Windows":
+    clear = lambda: os.system('cls')
+
+# Windows and Mac cannot run this script, due to the use of pigpio, kill script before pigpiod complains
+if platform == "Windows":
+    print("Your OS is unsupported. Please run on Raspberry Pi.")
+    logging.critical("Your OS is unsupported. Please run on Raspberry Pi.")
+    time.sleep(1)
+    exit()
+
+elif platform == "darwin":
+    print("Your OS is unsupported. Please run on Raspberry Pi.")
+    logging.critical("Your OS is unsupported. Please run on Raspberry Pi.")
+    time.sleep(1)
+    exit()
+
+# Logging test
+# logging.info("INFO TEST")
+# logging.debug("DEBUG TEST")
+# logging.warn("WARN TEST")
+# logging.error("ERROR TEST")
+# logging.critical("CRITICAL TEST")
+# logging.warn("Timezone is: " + TIMEZONE_CFG + "Time script started should be: " + StartTimestamp + "Currently: " + str(datetime.now(tzinfo=ZoneInfo(TIMEZONE_CFG))))
+
 def gpio_interrupt(gpio, level, tick):
 
     # Interrupt information.
@@ -71,7 +85,6 @@ def gpio_interrupt(gpio, level, tick):
         logging.debug(f"Success: lost={nrf.get_packages_lost()}, retries={nrf.get_retries()}")
     else:
         print(f"Error: lost={nrf.get_packages_lost()}, retries={nrf.get_retries()}")
-        logging.debug(f"Error: lost={nrf.get_packages_lost()}, retries={nrf.get_retries()}")
         logging.error(f"Error: lost={nrf.get_packages_lost()}, retries={nrf.get_retries()}")
 
     # Reset and enter RX mode.
@@ -116,7 +129,7 @@ receiver.start()  # start the receiving thread
 nrf = init_radio(RADIO_HOSTNAME, RADIO_PORT, RADIO_GPIO_CE, RADIO_ADDRESS)
 
 #init finishes here for some reason
-time.sleep(5)
+time.sleep(2)
 print("Done!")
 logging.info("Done!")
 
@@ -145,6 +158,7 @@ def callback(packet):  # packet type: sacn.DataPacket
         nrf.reset_packages_lost()
         nrf.send(payload)
         print(payload)
+        logging.debug("Payload: ",payload)
     except:
         traceback.print_exc()
         nrf.power_down()
