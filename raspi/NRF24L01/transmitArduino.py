@@ -43,7 +43,7 @@ radio.begin(0, 17)
 
 radio.setPayloadSize(6)
 radio.setChannel(0x76)
-radio.setDataRate(NRF.BR_1MBPS)
+radio.setDataRate(NRF24.BR_1MBPS)
 radio.setPALevel(NRF24.PA_MIN)
 
 radio.setAutoAck(True)
@@ -53,6 +53,10 @@ radio.enableAckPayload()
 radio.openWritingPipe(pipe)
 radio.printDetails()
 radio.show_registers()
+
+# provide an IP-Address to bind to if you are using Windows and want to use multicast
+receiver = sacn.sACNreceiver()
+receiver.start()  # start the receiving thread
 
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
