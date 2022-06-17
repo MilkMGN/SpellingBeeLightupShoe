@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import sacn
 
 # Import config file
-CONFIG_FILE = "../config/config.ini"
+CONFIG_FILE = "config/config.ini"
 
 config = configparser.ConfigParser()
 config.read_file(codecs.open(CONFIG_FILE, "r", "utf-8"))
@@ -31,8 +31,8 @@ RADIO_ADDRESS = config.get("Radio", "address")
 RADIO_GPIO_CE = int(config.get("Radio", "gpio_ce"))
 # RADIO_GPIO_CSN = config.get("Radio", "gpio_csn")
 #timestamp 12:01
-
-
+UNIVERSE_ID = int(config.get("sACN", "universe"))
+TIMEZONE_CFG = config.get("Logging", "timezone")
 
 GPIO.setmode(GPIO.BCM)
 
@@ -43,20 +43,14 @@ radio.begin(0, 17)
 
 radio.setPayloadSize(6)
 radio.setChannel(0x76)
-radio.setDataRate(NRF24.BR_1MBPS)
+radio.setDataRate(NRF24.BR_250KBPS)
 radio.setPALevel(NRF24.PA_MIN)
-
-radio.setAutoAck(True)
-radio.enableDynamicPayload()
-radio.enableAckPayload()
 
 radio.openWritingPipe(pipe)
 radio.printDetails()
-radio.show_registers()
 
-# provide an IP-Address to bind to if you are using Windows and want to use multicast
 receiver = sacn.sACNreceiver()
-receiver.start()  # start the receiving thread
+receiver.start()
 
 @receiver.listen_on('universe', universe=int(UNIVERSE_ID))  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
@@ -71,28 +65,40 @@ def callback(packet):  # packet type: sacn.DataPacket
  #
     logging.debug(f'{datetime.now(pytz.timezone(TIMEZONE_CFG))}' + rgb_str)
     # Assign the data in the appropriate channels to two tuples
+    # Assign first shoes 2 zones
     rgb_ch1 = rgb_data[0:3]
     rgb_ch2 = rgb_data[3:6]
 
-    # Try sending data using radio
-    try:
-        payload = struct.pack(
-            "<BBBBBB",
-            rgb_ch1[0],
-            rgb_ch1[1],
-            rgb_ch1[2],
-            rgb_ch2[0],
-            rgb_ch2[1],
-            rgb_ch2[2]
-        )
+    # Assign second shoes 2 zones
+    rgb_ch3 = rgb_data[7:9]
+    rgb_ch4 = rgb_data[10:12]
 
-        radio.reset_packages_lost()
-        radio.send(payload)
-        print(payload)
-        logging.debug("Payload: " + str(payload))
-    except:
-        traceback.print_exc()
-        radio.power_down()
+    # Make payload
+    payload = [
+        rgb_data[0],
+        rgb_data[1],
+        rgb_data[2],
+        rgb_data[3],
+        rgb_data[4],
+        rgb_data[5],
+        rgb_data[6],
+        rgb_data[7],
+        rgb_data[8],
+        rgb_data[9],
+        rgb_data[10],
+        rgb_data[11],
+    ]
+
+    radio.write(payload)
+    print(f'Fucking bitches: {payload}')
+
+    start = time.time()
+    radio.startListening()
+    while not radio.available(0):
+        time.sleep(1/100)
+        if time.time() - start > 2:
+            print("Timed out.")
+            break
 
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(int(UNIVERSE_ID))
